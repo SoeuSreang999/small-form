@@ -14,7 +14,9 @@ window.dragula = dragula;
 const formListElement = document.querySelector('[data-vue-form-list]');
 
 if (formListElement) {
-    const parseJson = (value, fallback) => {
+    const propsElement = formListElement.querySelector('[data-vue-form-list-props]');
+
+    const parseJson = (name, value, fallback) => {
         if (!value) {
             return fallback;
         }
@@ -22,16 +24,18 @@ if (formListElement) {
         try {
             return JSON.parse(value);
         } catch (error) {
-            console.error('Unable to parse Vue form list payload.', error);
+            console.error(`Unable to parse Vue form list ${name} payload.`, error);
             return fallback;
         }
     };
 
+    const props = parseJson('props', propsElement?.textContent, {});
+
     createApp(ListComponent, {
-        initialItems: parseJson(formListElement.dataset.forms, []),
+        initialItems: Array.isArray(props.initialItems) ? props.initialItems : [],
         createUrl: formListElement.dataset.createUrl ?? '',
         editBaseUrl: formListElement.dataset.editBaseUrl ?? '',
-        labels: parseJson(formListElement.dataset.labels, {}),
+        labels: props.labels ?? {},
     }).mount(formListElement);
 }
 

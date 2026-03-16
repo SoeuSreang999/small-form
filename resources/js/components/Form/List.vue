@@ -37,10 +37,11 @@ const resolvedLabels = computed(() => ({
   ...props.labels,
 }))
 
-const search = ref('')
+const searchInput = ref('')
+const searchTerm = ref('')
 
 const filteredItems = computed(() => {
-  const keyword = search.value.trim().toLowerCase()
+  const keyword = searchTerm.value.trim().toLowerCase()
 
   if (!keyword) {
     return props.initialItems
@@ -51,13 +52,23 @@ const filteredItems = computed(() => {
   )
 })
 
+const applySearch = () => {
+  searchTerm.value = searchInput.value.trim()
+}
+
 const editUrl = (uuid) => {
   const baseUrl = props.editBaseUrl.replace(/\/$/, '')
   return `${baseUrl}/${encodeURIComponent(uuid)}`
 }
 
 const createNew = async () => {
-  if (!props.createUrl || !window.axios) {
+  if (!props.createUrl) {
+    console.warn('Form create action is unavailable because the create URL is missing.')
+    return
+  }
+
+  if (!window.axios) {
+    console.warn('Form create action is unavailable because window.axios is missing.')
     return
   }
 
@@ -99,13 +110,15 @@ const createNew = async () => {
         <div class="col-lg-9 float-end">
           <div class="input-group mb-3">
             <input
-              v-model="search"
+              v-model="searchInput"
               type="text"
               class="form-control"
               :placeholder="resolvedLabels.search"
               :aria-label="resolvedLabels.search"
+              @input="applySearch"
+              @keyup.enter="applySearch"
             >
-            <button class="btn btn-primary" type="button" disabled>
+            <button class="btn btn-primary" type="button" @click="applySearch">
               <i class="fas fa-search"></i> {{ resolvedLabels.search }}
             </button>
           </div>
